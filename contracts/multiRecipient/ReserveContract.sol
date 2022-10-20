@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import "@openzeppelin/contracts@4.7.3/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract SeedContract {
+contract ReserveFund {
 
     uint256 public maxBalance;
     uint256 public balance;
@@ -45,25 +45,20 @@ contract SeedContract {
         require(maxBalance-allOwned >= amountConverted, "not enough BFG available to send.");
         require(ownedBFG[user] == 0, "Already whitelisted");
 
-        //10% TGE
-        uint256 TGE = amountConverted * 10 / 100;
-        itoken.transfer(user,TGE);
-        balance-=TGE;
-
         allOwned += amountConverted;
         ownedBFG[user] += amountConverted;
-        lockedBFG[user] += (amountConverted - TGE);
+        lockedBFG[user] += amountConverted;
         //starting 8.10 17:30
         lastUnlockTime[user] = 1665243000;
 
 	    whiteList[user] = 1;
-        emit TransferSent(address(this),user,TGE);
     }
+
 
     function getDaysUnlocked(uint8 daysPast, address _receiver) internal{
         
         //tokens for 1 day
-		uint256 newTokens = ownedBFG[_receiver] * 25 / 10000;
+		uint256 newTokens = ownedBFG[_receiver] * 556 / 100000;
 		//tokens for daysPast days
 		
         //transfer
@@ -88,13 +83,13 @@ contract SeedContract {
       
         //6 months cliff
 		if(vestingCycles == 0){
-			require(block.timestamp > constUnlockTime + 180 days , "Too early for unlocking tokens");
-			constUnlockTime = constUnlockTime + 180 days;
+			require(block.timestamp > constUnlockTime +  180 days , "Too early for unlocking tokens");
+			constUnlockTime = constUnlockTime +  180 days;
             vestingCycles ++;
             return;
 		}
 
-        //6 month-cliff, linear daily vesting for 12 months (90% -> 360 days -> 0.25%)
+        //6 month-cliff, linear daily vesting for 6 months (100% -> 180 days -> 0.556%)
 		if(vestingCycles > 0){
             //set unlock time after cliff
             if(lastUnlockTime[msg.sender] == 1665243000){
@@ -103,7 +98,6 @@ contract SeedContract {
 			require(block.timestamp > lastUnlockTime[msg.sender] + 1 days, "Too early for unlock");
 			//need to calculate days
 			uint8 daysPast = uint8((block.timestamp - lastUnlockTime[msg.sender]) / 60 / 60 / 24);
-			
             require(daysPast > 0, "Too early for unlock");
 			getDaysUnlocked(daysPast, msg.sender);
 		}
