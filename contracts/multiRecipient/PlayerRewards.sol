@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import "@openzeppelin/contracts@4.7.3/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract AdvisorsContract {
+contract PlayerRewardsContract {
 
     uint256 public maxBalance;
     uint256 public balance;
@@ -33,7 +33,7 @@ contract AdvisorsContract {
             allOwned = 0;
        }
 
-     function addWhiteList(address user,uint256 amount) public onlyOwner{
+    function addWhiteList(address user,uint256 amount) public onlyOwner{
         uint256 amountConverted = amount * 1000000000000000000;
         if (balance == 0){
                 uint256 _balance = itoken.balanceOf(address(this));
@@ -57,7 +57,7 @@ contract AdvisorsContract {
     function getDaysUnlocked(uint8 daysPast, address _receiver) internal{
         
         //tokens for 1 day
-		uint256 newTokens = ownedBFG[_receiver] * 139 / 100000;
+		uint256 newTokens = ownedBFG[_receiver] * 69 / 100000;
 		//tokens for daysPast days
 		
         //transfer
@@ -80,19 +80,19 @@ contract AdvisorsContract {
         require(ownedBFG[msg.sender] > 0,"Not WhiteListed or no more tokens to Claim");
         require(lockedBFG[msg.sender] > 0,"no unlocked BFG");
       
-        //12 months cliff
+        //3 months cliff
 		if(vestingCycles == 0){
-			require(block.timestamp > constUnlockTime + 360 days, "Too early for unlocking tokens");
-			constUnlockTime = constUnlockTime + 360 days;
+			require(block.timestamp > constUnlockTime + 90 days, "Too early for unlocking tokens");
+			constUnlockTime = constUnlockTime + 90 days;
             vestingCycles ++;
             return;
 		}
 
-        //12 month-cliff, linear daily vesting for 24 months (100% -> 720 days -> 0.139%)
+        //3 month-cliff, linear daily vesting for 48 months (100% -> 1440 days -> 0.069%)
 		if(vestingCycles > 0){
             //set unlock time after cliff
             if(lastUnlockTime[msg.sender] == 1665243000){
-                lastUnlockTime[msg.sender] = 1665243000 + 360 days;
+                lastUnlockTime[msg.sender] = 1665243000 + 90 days;
             }
 			require(block.timestamp > lastUnlockTime[msg.sender] + 1 days, "Too early for unlock");
 			//need to calculate days

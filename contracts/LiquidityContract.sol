@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import "@openzeppelin/contracts@4.7.3/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract EcosystemFundContract {
+contract LiquidityContract {
 
     uint256 public maxBalance;
     uint256 public balance;
     address public owner;
     address public token;
-    uint256 public lastUnlockTime;
     IERC20 itoken;
-    
-    uint16 public vestingCycles;
 
     event TransferSent(address _from,address _destAddr,uint _amount);
 
@@ -20,8 +17,6 @@ contract EcosystemFundContract {
             owner = _owner;
             token = address(_itoken);
             itoken = _itoken;
-            lastUnlockTime = 1665243000;
-            vestingCycles = 0;
        }
 
     function init() public onlyOwner(){
@@ -43,28 +38,17 @@ contract EcosystemFundContract {
         require(amount > 0 , "Need to request more than 0 BFG");
         require(balance > 0 , "No more BFG to collect");
       
-        //3 months cliff
-		if(vestingCycles == 0){
-			require(block.timestamp > lastUnlockTime + 90 days , "Too early for unlocking tokens");
-			lastUnlockTime = lastUnlockTime + 90 days;
-            vestingCycles ++;
-            return;
-		}
-        //Unlocked
-		if(vestingCycles > 0){
-            uint256 amountConverted = amount * 1000000000000000000;
+        
+        uint256 amountConverted = amount * 1000000000000000000;
 			
-            if(amountConverted > balance){
-                amountConverted = balance;
-            }
+        if(amountConverted > balance){
+            amountConverted = balance;
+        }
 
-			itoken.transfer(_address,amountConverted);
-            balance-=amountConverted;
-            lastUnlockTime = block.timestamp;
-            vestingCycles++;
+        itoken.transfer(_address,amountConverted);
+        balance-=amountConverted;
 
-            emit TransferSent(address(this),_address,amountConverted);
-		}
+        emit TransferSent(address(this),_address,amountConverted);
     }
 
     modifier onlyOwner() {
